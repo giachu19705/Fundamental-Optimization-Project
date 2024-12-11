@@ -21,19 +21,29 @@ def initial_feasible_solution(N, M, t, g, s, c):
     room_slots = {i: [] for i in range(1, M + 1)}  # Room availability tracking
     
     for class_id in range(1, N + 1):
+        # Filter out rooms that can accommodate the class size
+        suitable_rooms = [j for j in range(1, M + 1) if c[j - 1] >= s[class_id - 1]]
+        if not suitable_rooms:
+            # Skip this class if no rooms are suitable
+            continue
+
+        # Try to find a slot where this class can be scheduled
         for _ in range(100):  # Attempt multiple times to find a slot
             start_slot = random.randint(1, 61 - t[class_id - 1])
-            room_chosen = random.choice([j for j in range(1, M + 1) if c[j - 1] >= s[class_id - 1]])
+            room_chosen = random.choice(suitable_rooms)
 
+            # Check if the chosen slot and room are available
             if all(start_slot + offset not in teacher_slots[g[class_id - 1]] for offset in range(t[class_id - 1])) and \
                all(start_slot + offset not in room_slots[room_chosen] for offset in range(t[class_id - 1])):
                 assignments.append((class_id, start_slot, room_chosen))
+                # Mark the slots as taken for both the teacher and the room
                 for offset in range(t[class_id - 1]):
                     teacher_slots[g[class_id - 1]].append(start_slot + offset)
                     room_slots[room_chosen].append(start_slot + offset)
                 break
 
     return assignments
+
 
 def cost_function(assignments):
     # The cost is the number of classes successfully scheduled
