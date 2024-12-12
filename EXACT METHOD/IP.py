@@ -7,7 +7,7 @@ def schedule_timetable_ip(N, M, t, g, s, c):
     if not solver:
         return "Solver not available."
 
-    solver.SetTimeLimit(30000)
+    solver.SetTimeLimit(400000)
     # Variables
     x = {}  # x[i, p, k]: 1 nếu lớp i được xếp vào phòng p và bắt đầu từ tiết k
     for i in range(N):
@@ -76,7 +76,8 @@ def schedule_timetable_ip(N, M, t, g, s, c):
             print(*i)
     else:
         print("No feasible solution found.")
-    print(f"Solver run time: {solver.WallTime()} seconds")
+    time = solver.WallTime()/1000
+    print(f"Solver run time: {time} seconds")
 
 t=[]
 g=[]
