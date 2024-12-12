@@ -12,7 +12,7 @@ def generate_test_case(N, M):
     for i in range(N):
         t.append(random.randint(1, 4))  # Số tiết của lớp từ 1 đến 4
         g.append(random.randint(1, 100))  # Giáo viên của lớp từ 1 đến 100
-        s.append(random.randint(1, 200))  # Số sinh viên của lớp từ 1 đến 200
+        s.append(random.randint(1, 200))  # Số sinh viên của lớp từ 1 đến 200       
 
     # Ghi vào file input.txt
     with open('input.txt', 'w') as f:
