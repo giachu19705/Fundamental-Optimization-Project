@@ -1,6 +1,5 @@
-#PYTHON 
 import random
-import copy
+import multiprocessing
 
 def read_input():
     N, M = map(int, input().split())
@@ -83,39 +82,49 @@ def generate_neighbors(assignments, N, M, classes, room_capacities):
 def calculate_score(assignments):
     return len(assignments)
 
-def local_search(N, M, classes, room_capacities):
+def local_search_run(args):
+    N, M, classes, room_capacities = args
     best_solution = []
     best_score = 0
-    num_runs = 40
-    max_iterations = 400
-    no_improve_limit = 200
+    max_iterations = 300
+    no_improve_limit = 100
 
-    for _ in range(num_runs):
-        current_solution = initialize_solution(N, M, classes, room_capacities)
-        current_score = calculate_score(current_solution)
-        no_improve_count = 0
-        iterations = 0
-        while no_improve_count < no_improve_limit and iterations < max_iterations:
-            neighbors = generate_neighbors(current_solution, N, M, classes, room_capacities)
-            if not neighbors:
-                break
-            k_best_neighbors = sorted(neighbors, key=calculate_score, reverse=True)[:min(5, len(neighbors))]
-            best_neighbor = random.choice(k_best_neighbors) if k_best_neighbors else None
-            if best_neighbor is None:
-                break
-            neighbor_score = calculate_score(best_neighbor)
+    current_solution = initialize_solution(N, M, classes, room_capacities)
+    current_score = calculate_score(current_solution)
+    no_improve_count = 0
+    iterations = 0
 
-            if neighbor_score > current_score:
-                current_solution = best_neighbor
-                current_score = neighbor_score
-                no_improve_count = 0
-            else:
-                no_improve_count += 1
-            iterations += 1
+    while no_improve_count < no_improve_limit and iterations < max_iterations:
+        neighbors = generate_neighbors(current_solution, N, M, classes, room_capacities)
+        if not neighbors:
+            break
+        k_best_neighbors = sorted(neighbors, key=calculate_score, reverse=True)[:min(5, len(neighbors))]
+        best_neighbor = random.choice(k_best_neighbors) if k_best_neighbors else None
+        if best_neighbor is None:
+            break
+        neighbor_score = calculate_score(best_neighbor)
 
-        if current_score > best_score:
-            best_score = current_score
-            best_solution = current_solution
+        if neighbor_score > current_score:
+            current_solution = best_neighbor
+            current_score = neighbor_score
+            no_improve_count = 0
+        else:
+            no_improve_count += 1
+        iterations += 1
+
+    if current_score > best_score:
+        best_score = current_score
+        best_solution = current_solution
+
+    return best_solution
+
+def local_search(N, M, classes, room_capacities):
+    num_runs = 4  # Number of parallel runs
+
+    with multiprocessing.Pool(processes=num_runs) as pool:
+        results = pool.map(local_search_run, [(N, M, classes, room_capacities)] * num_runs)
+
+    best_solution = max(results, key=lambda sol: calculate_score(sol))
     return best_solution
 
 def output_solution(solution):
