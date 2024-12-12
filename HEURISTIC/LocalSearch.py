@@ -1,3 +1,4 @@
+#PYTHON 
 import random
 import copy
 
@@ -18,6 +19,8 @@ def is_valid_assignment(class_idx, slot, room, assignments, classes, room_capaci
         if classes[other_class][1] == g:
             if max(slot, other_slot) < min(slot + t, other_slot + classes[other_class][0]):
                 return False
+        if other_room == room and max(slot, other_slot) < min(slot + t, other_slot + classes[other_class][0]):
+            return False
     return True
 
 def initialize_solution(N, M, classes, room_capacities):
@@ -26,18 +29,19 @@ def initialize_solution(N, M, classes, room_capacities):
     sorted_classes = sorted(range(N), key=lambda i: classes[i][0], reverse=True)
     for i in sorted_classes:
         t, g, s = classes[i]
-        for _ in range(100):
-            start_slot = random.randint(0, 60 - t)
-            room = random.randint(0, M - 1)
-            valid = True
-            for k in range(t):
-                if assigned_slots[start_slot + k][room] or not is_valid_assignment(i, start_slot + k, room, assignments, classes, room_capacities):
-                    valid = False
+        for start_slot in range(60 - t + 1):
+            for room in range(M):
+                valid = True
+                for k in range(t):
+                    if assigned_slots[start_slot + k][room] or not is_valid_assignment(i, start_slot + k, room, assignments, classes, room_capacities):
+                        valid = False
+                        break
+                if valid:
+                    assignments.append((i, start_slot, room))
+                    for k in range(t):
+                        assigned_slots[start_slot + k][room] = True
                     break
             if valid:
-                assignments.append((i, start_slot, room))
-                for k in range(t):
-                    assigned_slots[start_slot + k][room] = True
                 break
     return assignments
 
@@ -54,12 +58,7 @@ def generate_neighbors(assignments, N, M, classes, room_capacities):
         for new_slot in range(60 - t + 1):
             if new_slot != slot:
                 new_assignments = assignments[:i] + [(class_idx, new_slot, room)] + assignments[i + 1:]
-                valid = True
-                for k in range(t):
-                    if not is_valid_assignment(class_idx, new_slot + k, room, new_assignments, classes, room_capacities):
-                        valid = False
-                        break
-                if valid:
+                if is_valid_assignment(class_idx, new_slot, room, new_assignments, classes, room_capacities):
                     neighbors.append(new_assignments)
 
         # Di chuyển sang phòng khác
@@ -67,12 +66,7 @@ def generate_neighbors(assignments, N, M, classes, room_capacities):
             if new_room != room:
                 for new_slot in range(60 - t + 1):
                     new_assignments = assignments[:i] + [(class_idx, new_slot, new_room)] + assignments[i+1:]
-                    valid = True
-                    for k in range(t):
-                        if not is_valid_assignment(class_idx, new_slot+k, new_room, new_assignments, classes, room_capacities):
-                            valid = False
-                            break
-                    if valid:
+                    if is_valid_assignment(class_idx, new_slot, new_room, new_assignments, classes, room_capacities):
                         neighbors.append(new_assignments)
 
         # Hoán đổi
@@ -80,17 +74,8 @@ def generate_neighbors(assignments, N, M, classes, room_capacities):
             if classes[assignments[i][0]][1] != classes[assignments[j][0]][1]:
                 new_assignments = assignments[:]
                 new_assignments[i], new_assignments[j] = new_assignments[j], new_assignments[i]
-                valid_i = True
-                for k in range(t):
-                    if not is_valid_assignment(class_idx, new_assignments[i][1] + k, new_assignments[i][2], new_assignments, classes, room_capacities):
-                        valid_i = False
-                        break
-                t_j = classes[assignments[j][0]][0]
-                valid_j = True
-                for k in range(t_j):
-                    if not is_valid_assignment(assignments[j][0], new_assignments[j][1] + k, new_assignments[j][2], new_assignments, classes, room_capacities):
-                        valid_j = False
-                        break
+                valid_i = is_valid_assignment(assignments[j][0], new_assignments[i][1], new_assignments[i][2], new_assignments, classes, room_capacities)
+                valid_j = is_valid_assignment(assignments[i][0], new_assignments[j][1], new_assignments[j][2], new_assignments, classes, room_capacities)
                 if valid_i and valid_j:
                     neighbors.append(new_assignments)
     return neighbors
@@ -113,8 +98,8 @@ def local_search(N, M, classes, room_capacities):
         while no_improve_count < no_improve_limit and iterations < max_iterations:
             neighbors = generate_neighbors(current_solution, N, M, classes, room_capacities)
             if not neighbors:
-              break
-            k_best_neighbors = sorted(neighbors, key=calculate_score, reverse=True)[:min(5,len(neighbors))]
+                break
+            k_best_neighbors = sorted(neighbors, key=calculate_score, reverse=True)[:min(5, len(neighbors))]
             best_neighbor = random.choice(k_best_neighbors) if k_best_neighbors else None
             if best_neighbor is None:
                 break
@@ -126,7 +111,7 @@ def local_search(N, M, classes, room_capacities):
                 no_improve_count = 0
             else:
                 no_improve_count += 1
-            iterations+=1
+            iterations += 1
 
         if current_score > best_score:
             best_score = current_score
