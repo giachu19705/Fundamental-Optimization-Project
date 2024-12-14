@@ -1,5 +1,5 @@
 from ortools.sat.python import cp_model
-import time
+import os
 def schedule_timetable(N, M, t, g, s, c):
     # Constants
     T = 60
@@ -41,21 +41,16 @@ def schedule_timetable(N, M, t, g, s, c):
                 day_start = (k // 12) * 12
                 if k + t[i] - 1 >= day_start + 12:
                     model.Add(x[i, p, k] == 0)
-                if k % 12 <= 6:  # Sáng
-                    shift_end = (k // 12) * 12 + 6
-                else:  # Chiều
-                    shift_end = (k // 12) * 12 + 12
-                if k + t[i] - 1 > shift_end:
-                    model.Add(x[i, p, k] == 0)
 
     # Objective: Maximize the number of classes scheduled
     model.Maximize(sum(x[i, p, k] for i in range(N) for p in range(M) for k in range(T - t[i] + 1)))
 
     # Solve the model
     solver = cp_model.CpSolver()
-    solver.parameters.max_time_in_seconds = 400.0
+    
 
     status = solver.Solve(model)
+    solver.parameters.max_time_in_seconds = 600.0
 
     if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
         schedule = []
@@ -64,23 +59,45 @@ def schedule_timetable(N, M, t, g, s, c):
                 for k in range(T - t[i] + 1):
                     if solver.BooleanValue(x[i, p, k]):
                         schedule.append([i + 1, k + 1, p + 1]) 
-        print(len(schedule))
-        for i in schedule:
-            print (*i)
+        return schedule, solver.WallTime()
     else:
-        print ("No feasible solution found.")
-    print (f"Solver run time: {solver.WallTime()} seconds\n")
+        return "No feasible solution found."
+    
+def test_input(inputFile):
+    t = []
+    g = []
+    s = []
+    c = []
+    with open(inputFile, "r") as f:
+        lines = f.readlines()
+        N, M = [int(x) for x in lines[0].split()]
+        for i in range(1, N + 1):
+            a, b, c = lines[i].split()
+            t.append(int(a))
+            g.append(int(b))
+            s.append(int(c))
+        c=list(map(int,lines[N+1].split()))
+    return N,M,t,g,s,c
 
-t=[]
-g=[]
-s=[]
-c=[]
-N, M =list(map(int, input().split()))
-A=[]
-for i in range (N):
-    A = list(map(int,input().split()))
-    t.append(A[0])
-    g.append(A[1])
-    s.append(A[2])
-c=list(map(int,input().split()))
-schedule_timetable(N, M, t, g, s, c)
+#main
+def solve(test_path, index):
+    N,M,t,g,s,c = test_input(test_path)
+    schedule, time =schedule_timetable(N,M,t,g,s,c)
+    if schedule == "No feasible solution found.":
+        print ("No feasible solution found.")
+        with open(f'./RESULT/CP/result_test{index}.txt', 'w') as f:
+                f.write("No feasible solution found.")
+    else:
+        print (len(schedule))
+        for i in schedule: print(*i)
+        print(f"Solver run time: {time} seconds")
+        with open(f'./RESULT/CP/result_test{index}.txt', 'w') as f:
+            f.write(f"Number of classes need to be scheduled: {N}\n")
+            f.write(f"Number of tasks scheduled: {len(schedule)}\n")
+            f.write(f"Solver run time: {time} seconds\n") 
+
+for i in range(24,25):
+    if i == 22: continue
+    test_path=f'./DATA/test{i}.txt'
+    solve(test_path,i)
+
