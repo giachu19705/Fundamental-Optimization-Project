@@ -3,6 +3,7 @@ N, M, t, g, s, c
 # kiểm tra ràng buộc: is_valid_assignment
 # khởi tạo nghiệm ban đầu: initialize_solution
 Sắp xếp các lớp theo số tiết giảm dần (ưu tiên xếp lớp dài trước)
+
 Duyệt tất cả slot thời gian và phòng để xếp lớp vào nếu không vi phạm:
 - Sức chứa phòng học
 - Ràng buộc giáo viên
@@ -16,11 +17,13 @@ Từ một nghiệm hiện tại, tạo ra các nghiệm lân cận:
 Tính số lớp xếp được trong nghiệm
 # Local Search: local_search_run
 Từ nghiệm ban đầu, duyệt qua các nghiệm lân cận để tìm nghiệm tốt hơn
+
 Dừng nếu:
 - Không cải thiện sau 'no_improve_limit' lần lặp
 - Vượt quá số lần lặp 'max_iterations'
 # Chạy song song: local_search
 Chạy nhiều Local Search song song bằng multiprocessing
+
 Chọn nghiệm tốt nhất từ các kết quả
 # in ra output
 
