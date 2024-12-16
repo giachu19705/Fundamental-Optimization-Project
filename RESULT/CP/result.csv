@@ -1,0 +1,20 @@
+File,Number of tasks,Solver run time
+result_test1.txt,8,0.44684670000000004
+result_test2.txt,15,0.3304956
+result_test3.txt,13,1.0418035
+result_test4.txt,20,0.9304696
+result_test5.txt,29,1.7081400000000002
+result_test6.txt,34,3.3359824000000002
+result_test7.txt,37,6.3767768
+result_test8.txt,44,17.3520566
+result_test9.txt,49,94.2876291
+result_test10.txt,55,47.553375700000004
+result_test11.txt,52,4.5990875
+result_test12.txt,45,2.8144132
+result_test13.txt,70,57.7079232
+result_test14.txt,52,6.9916403
+result_test15.txt,80,495.33744770000004
+result_test16.txt,78,16.5268474
+result_test17.txt,87,132.18637750000002
+result_test18.txt,94,126.73072810000001
+result_test19.txt,98,87.09121520000001
