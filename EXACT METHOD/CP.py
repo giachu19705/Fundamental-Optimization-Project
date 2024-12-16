@@ -50,7 +50,7 @@ def schedule_timetable(N, M, t, g, s, c):
     
 
     status = solver.Solve(model)
-    solver.parameters.max_time_in_seconds = 600.0
+    solver.parameters.max_time_in_seconds = 500.0
 
     if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
         schedule = []
