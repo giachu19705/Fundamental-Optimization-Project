@@ -1,6 +1,5 @@
 import random
 import multiprocessing
-import time
 
 def read_input():
     N, M = map(int, input().split())
@@ -129,7 +128,6 @@ def local_search(N, M, classes, room_capacities):
     return best_solution
 
 if __name__ == "__main__":
-    start_time = time.time()
 
     N, M, classes, room_capacities = read_input()
     solution = local_search(N, M, classes, room_capacities)
@@ -138,4 +136,3 @@ if __name__ == "__main__":
     for class_idx, slot, room in solution:
         print(class_idx + 1, slot + 1, room + 1)
 
-    print(f"Time taken: {time.time() - start_time:.2f} seconds")
