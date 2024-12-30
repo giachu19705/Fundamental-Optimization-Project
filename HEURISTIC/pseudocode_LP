@@ -5,6 +5,7 @@ FUNCTION read_input():
         Each class has: duration (t), group (g), size (s)
     INPUT room_capacities (list of M integers)
     RETURN N, M, class_list, room_capacities
+
 # Validate Assignment (is_valid_assignment)
 FUNCTION is_valid_assignment(class, time_slot, room, assignments):
     (t, g, s) = class details
@@ -20,6 +21,7 @@ FUNCTION is_valid_assignment(class, time_slot, room, assignments):
     RETURN True
 FUNCTION time_overlap(slot1, duration1, slot2, duration2):
     RETURN max(slot1, slot2) < min(slot1 + duration1, slot2 + duration2)
+
 # Initialize Solution (initialize_solution)
 FUNCTION initialize_solution(N, M, class_list, room_capacities):
     CREATE empty assignments list
@@ -35,6 +37,7 @@ FUNCTION initialize_solution(N, M, class_list, room_capacities):
                     MARK time slots as occupied in time_slot_usage
                     BREAK
     RETURN assignments
+
 # Generate Neighbors (generate_neighbors)
 FUNCTION generate_neighbors(assignments):
     CREATE empty neighbors list
@@ -53,9 +56,11 @@ FUNCTION generate_neighbors(assignments):
             ADD to neighbors
     
     RETURN neighbors
+
 # Calculate Score (calculate_score)
 FUNCTION calculate_score(assignments):
     RETURN NUMBER OF assigned classes
+
 # Local Search Run (local_search_run)
 FUNCTION local_search_run(N, M, class_list, room_capacities):
     current_solution = initialize_solution(N, M, class_list, room_capacities)
@@ -76,12 +81,14 @@ FUNCTION local_search_run(N, M, class_list, room_capacities):
             INCREMENT no_improve_count
     
     RETURN current_solution
+
 # Parallel Local Search (local_search)
 FUNCTION local_search(N, M, class_list, room_capacities):
     RUN multiple instances of local_search_run IN PARALLEL
     COLLECT all solutions
     SELECT the best solution BASED ON score
     RETURN the best solution
+
 # Main Program
 START
     (N, M, class_list, room_capacities) = read_input()
