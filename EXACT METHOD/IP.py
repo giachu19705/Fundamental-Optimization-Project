@@ -68,38 +68,28 @@ def schedule_timetable_ip(N, M, t, g, s, c):
     else:
         return "No feasible solution found."
     
-def test_input(inputFile):
-    t=[]
-    g=[]
-    s=[]
-    c=[]
-    with open(inputFile, "r") as f:
-        lines = f.readlines()
-        N, M = [int(x) for x in lines[0].split()]
-        for i in range(1, N + 1):
-            a, b, c = lines[i].split()
-            t.append(int(a))
-            g.append(int(b))
-            s.append(int(c))
-        c=list(map(int,lines[N+1].split()))
+def test_input():
+    t = []
+    g = []
+    s = []
+    c = []
+    N,M = map(int,input().split())
+    for i in range (N):
+        a, b, c= map(int,input().split())
+        t.append(int(a))
+        g.append(int(b))
+        s.append(int(c))
+    c=list(map(int,input().split()))
     return N,M,t,g,s,c
 
-def solve(test_path, index):
-    N,M,t,g,s,c = test_input(test_path)
+#main
+def solve():
+    N,M,t,g,s,c = test_input()
     schedule, time =schedule_timetable_ip(N,M,t,g,s,c)
     if schedule == "No feasible solution found.":
         print ("No feasible solution found.")
-        with open(f'./RESULT/IP/result_test{index}.txt', 'w') as f:
-                f.write("No feasible solution found.")
     else:
         print (len(schedule))
         for i in schedule: print(*i)
         print(f"Solver run time: {time} seconds")
-        with open(f'./RESULT/IP/result_test{index}.txt', 'w') as f:
-            f.write(f"Number of classes need to be scheduled: {N}\n")
-            f.write(f"Number of tasks scheduled: {len(schedule)}\n")
-            f.write(f"Solver run time: {time} seconds\n") 
-
-for i in range(1,25):
-    test_path=f'./DATA/test{i}.txt'
-    solve(test_path,i)
+solve()
