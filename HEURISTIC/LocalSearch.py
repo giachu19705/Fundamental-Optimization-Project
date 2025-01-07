@@ -26,6 +26,7 @@ def initialize_solution(N, M, classes, room_capacities):
     assignments = []
     assigned_slots = [([False] * M) for _ in range(60)]
     sorted_classes = sorted(range(N), key=lambda i: classes[i][0], reverse=True)
+
     for i in sorted_classes:
         t, g, s = classes[i]
         for start_slot in range(60 - t + 1):
@@ -42,25 +43,21 @@ def initialize_solution(N, M, classes, room_capacities):
                     break
             if valid:
                 break
+
     return assignments
 
 def generate_neighbors(assignments, N, M, classes, room_capacities):
     neighbors = []
-    n_assignments = len(assignments)
-    if n_assignments < 2:
-        return neighbors
-    for i in range(n_assignments):
+    for i in range(len(assignments)):
         class_idx, slot, room = assignments[i]
         t = classes[class_idx][0]
 
-        # Di chuyển trong cùng phòng trước
         for new_slot in range(60 - t + 1):
             if new_slot != slot:
                 new_assignments = assignments[:i] + [(class_idx, new_slot, room)] + assignments[i + 1:]
                 if is_valid_assignment(class_idx, new_slot, room, new_assignments, classes, room_capacities):
                     neighbors.append(new_assignments)
 
-        # Di chuyển sang phòng khác
         for new_room in range(M):
             if new_room != room:
                 for new_slot in range(60 - t + 1):
@@ -68,15 +65,14 @@ def generate_neighbors(assignments, N, M, classes, room_capacities):
                     if is_valid_assignment(class_idx, new_slot, new_room, new_assignments, classes, room_capacities):
                         neighbors.append(new_assignments)
 
-        # Hoán đổi
-        for j in range(i + 1, n_assignments):
-            if classes[assignments[i][0]][1] != classes[assignments[j][0]][1]:
-                new_assignments = assignments[:]
-                new_assignments[i], new_assignments[j] = new_assignments[j], new_assignments[i]
-                valid_i = is_valid_assignment(assignments[j][0], new_assignments[i][1], new_assignments[i][2], new_assignments, classes, room_capacities)
-                valid_j = is_valid_assignment(assignments[i][0], new_assignments[j][1], new_assignments[j][2], new_assignments, classes, room_capacities)
-                if valid_i and valid_j:
-                    neighbors.append(new_assignments)
+    for class_idx in range(N):
+        if class_idx not in [assignment[0] for assignment in assignments]:
+            t, g, s = classes[class_idx]
+            for start_slot in range(60 - t + 1):
+                for room in range(M):
+                    new_assignments = assignments + [(class_idx, start_slot, room)]
+                    if is_valid_assignment(class_idx, start_slot, room, new_assignments, classes, room_capacities):
+                        neighbors.append(new_assignments)
     return neighbors
 
 def calculate_score(assignments):
@@ -84,55 +80,40 @@ def calculate_score(assignments):
 
 def local_search_run(args):
     N, M, classes, room_capacities = args
-    best_solution = []
-    best_score = 0
-    max_iterations = 300
-    no_improve_limit = 100
-
     current_solution = initialize_solution(N, M, classes, room_capacities)
     current_score = calculate_score(current_solution)
+
     no_improve_count = 0
     iterations = 0
+    max_iterations = 300
+    no_improve_limit = 100
 
     while no_improve_count < no_improve_limit and iterations < max_iterations:
         neighbors = generate_neighbors(current_solution, N, M, classes, room_capacities)
         if not neighbors:
             break
-        k_best_neighbors = sorted(neighbors, key=calculate_score, reverse=True)[:min(5, len(neighbors))]
-        best_neighbor = random.choice(k_best_neighbors) if k_best_neighbors else None
-        if best_neighbor is None:
-            break
-        neighbor_score = calculate_score(best_neighbor)
 
-        if neighbor_score > current_score:
+        best_neighbor = max(neighbors, key=calculate_score, default=None)
+        if best_neighbor and calculate_score(best_neighbor) > current_score:
             current_solution = best_neighbor
-            current_score = neighbor_score
+            current_score = calculate_score(best_neighbor)
             no_improve_count = 0
         else:
             no_improve_count += 1
         iterations += 1
 
-    if current_score > best_score:
-        best_score = current_score
-        best_solution = current_solution
-
-    return best_solution
+    return current_solution
 
 def local_search(N, M, classes, room_capacities):
-    num_runs = 4  # Number of parallel runs
-
+    num_runs = 4
     with multiprocessing.Pool(processes=num_runs) as pool:
         results = pool.map(local_search_run, [(N, M, classes, room_capacities)] * num_runs)
-
-    best_solution = max(results, key=lambda sol: calculate_score(sol))
-    return best_solution
+    return max(results, key=calculate_score)
 
 if __name__ == "__main__":
-
     N, M, classes, room_capacities = read_input()
     solution = local_search(N, M, classes, room_capacities)
 
     print(len(solution))
     for class_idx, slot, room in solution:
         print(class_idx + 1, slot + 1, room + 1)
-
