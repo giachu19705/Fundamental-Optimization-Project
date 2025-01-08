@@ -15,6 +15,9 @@ def is_valid_assignment(class_idx, slot, room, assignments, classes, room_capaci
     t, g, s = classes[class_idx]
     if s > room_capacities[room]:
         return False
+    start_day = (slot // 12) * 12
+    if slot < start_day or (slot + t - 1) >= (start_day + 12):
+        return False
     for other_class, other_slot, other_room in assignments:
         if classes[other_class][1] == g or other_room == room:
             if max(slot, other_slot) < min(slot + t, other_slot + classes[other_class][0]):
@@ -28,15 +31,18 @@ def initialize_solution(N, M, classes, room_capacities):
     for i in sorted_classes:
         t, g, s = classes[i]
         added = False
-        for start_slot in range(60 - t + 1):
-            for room in range(M):
-                if all(not assigned_slots[start_slot + k][room] for k in range(t)):
-                    if is_valid_assignment(i, start_slot, room, assignments, classes, room_capacities):
-                        assignments.append((i, start_slot, room))
-                        for k in range(t):
-                            assigned_slots[start_slot + k][room] = True
-                        added = True
-                        break
+        for start_day in range(0, 60, 12):
+            for start_slot in range(start_day, start_day + 12 - t + 1):
+                for room in range(M):
+                    if all(not assigned_slots[start_slot + k][room] for k in range(t)):
+                        if is_valid_assignment(i, start_slot, room, assignments, classes, room_capacities):
+                            assignments.append((i, start_slot, room))
+                            for k in range(t):
+                                assigned_slots[start_slot + k][room] = True
+                            added = True
+                            break
+                if added:
+                    break
             if added:
                 break
     return assignments
@@ -48,14 +54,15 @@ def attempt_to_add_unassigned_classes(current_solution, N, M, classes, room_capa
         assigned_slots[slot][room] = True
     for class_idx in unassigned_classes:
         t, g, s = classes[class_idx]
-        for start_slot in range(60 - t + 1):
-            for room in range(M):
-                if all(not assigned_slots[start_slot + k][room] for k in range(t)):
-                    if is_valid_assignment(class_idx, start_slot, room, current_solution, classes, room_capacities):
-                        current_solution.append((class_idx, start_slot, room))
-                        for k in range(t):
-                            assigned_slots[start_slot + k][room] = True
-                        return current_solution
+        for start_day in range(0, 60, 12):
+            for start_slot in range(start_day, start_day + 12 - t + 1):
+                for room in range(M):
+                    if all(not assigned_slots[start_slot + k][room] for k in range(t)):
+                        if is_valid_assignment(class_idx, start_slot, room, current_solution, classes, room_capacities):
+                            current_solution.append((class_idx, start_slot, room))
+                            for k in range(t):
+                                assigned_slots[start_slot + k][room] = True
+                            return current_solution
     return current_solution
 
 def generate_neighbors(assignments, N, M, classes, room_capacities):
@@ -121,7 +128,7 @@ def local_search(N, M, classes, room_capacities):
 def measure_execution_time():
     N, M, classes, room_capacities = read_input()
     solution = local_search(N, M, classes, room_capacities)
-    print(len(solution))
+    print(len(solution))   
     for class_idx, slot, room in solution:
         print(class_idx + 1, slot + 1, room + 1)
 
