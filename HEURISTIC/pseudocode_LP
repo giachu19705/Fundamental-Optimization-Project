@@ -25,13 +25,13 @@ Evaluate a Solution:
     Use this count as the "score" of the solution.
 
 Local Search Algorithm:
-Start with the initial solution and calculate its score.
-Keep track of the best solution found so far and its score.
-Repeat the following steps until a certain number of iterations or no further improvement is possible:
-    Generate neighboring solutions based on the current solution.
-    Select a small number (e.g., up to 5) of the best neighbors with the highest scores.
-    Randomly pick one of these top neighbors as the new solution.
-    If the new solution has a better score, update the current solution and reset the "no improvement" counter.
-    If no improvement, increase the counter.
-    Occasionally attempt to add unassigned classes to the current solution.
-After completing all iterations, save the best solution found during the process.
+    Start with the initial solution and calculate its score.
+    Keep track of the best solution found so far and its score.
+    Repeat the following steps until a certain number of iterations or no further improvement is possible:
+        Generate neighboring solutions based on the current solution.
+        Select a small number (e.g., up to 5) of the best neighbors with the highest scores.
+        Randomly pick one of these top neighbors as the new solution.
+        If the new solution has a better score, update the current solution and reset the "no improvement" counter.
+        If no improvement, increase the counter.
+        Occasionally attempt to add unassigned classes to the current solution.
+    After completing all iterations, save the best solution found during the process.
