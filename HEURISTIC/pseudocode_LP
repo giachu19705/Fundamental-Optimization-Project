@@ -1,100 +1,37 @@
-# read input (read_input)
-FUNCTION read_input():
-    INPUT N, M  // Number of classes and rooms
-    CREATE class_list (N entries):
-        Each class has: duration (t), group (g), size (s)
-    INPUT room_capacities (list of M integers)
-    RETURN N, M, class_list, room_capacities
+Create an Initial Solution:
+    Sort classes by their duration in descending order (longest classes first).
+    Create an empty list to store assignments and a tracking list to keep track of room usage for every time slot.
+    For each class in the sorted list:
+    Try all possible starting time slots:
+        For each room:
+            Check if the room is big enough for the class and if no other class overlaps in time (for both the teacher and room).
+            If it is valid, assign the class to this time slot and room.
+            Mark the room and time slots as occupied.
+            Move to the next class once assigned.
 
-# Validate Assignment (is_valid_assignment)
-FUNCTION is_valid_assignment(class, time_slot, room, assignments):
-    (t, g, s) = class details
-    IF class size (s) > room capacity:
-        RETURN False
-    
-    FOR each assigned_class IN assignments:
-        IF same group (g) AND overlapping time slots:
-            RETURN False
-        IF same room AND overlapping time slots:
-            RETURN False
-    
-    RETURN True
-FUNCTION time_overlap(slot1, duration1, slot2, duration2):
-    RETURN max(slot1, slot2) < min(slot1 + duration1, slot2 + duration2)
+Explore Neighboring Solutions:
+    For each class already assigned:
+        Try moving the class to a different time slot within the same room.
+        Try moving the class to a different room at a different time slot.
+        Try swapping the time slot and room assignments with another class (both assignments remain valid).
+    For each neighbor generated:
+        Test if the neighbor improves the current solution.
+        Randomly select a neighbor if no improvement is found.
+        Attempt to add unassigned classes to the neighbor.
+    Generate a list of all possible valid changes (neighbors) from the current solution.
 
-# Initialize Solution (initialize_solution)
-FUNCTION initialize_solution(N, M, class_list, room_capacities):
-    CREATE empty assignments list
-    CREATE time_slot_usage (60 slots × M rooms), all set to False
-    
-    SORT class_list BY duration DESCENDING
-    
-    FOR each class IN sorted class_list:
-        FOR each time_slot FROM 0 TO (60 - class duration):
-            FOR each room FROM 0 TO M-1:
-                IF is_valid_assignment(class, time_slot, room, assignments):
-                    ADD (class, time_slot, room) TO assignments
-                    MARK time slots as occupied in time_slot_usage
-                    BREAK
-    RETURN assignments
+Evaluate a Solution:
+    Count how many classes have been successfully scheduled without conflicts.
+    Use this count as the "score" of the solution.
 
-# Generate Neighbors (generate_neighbors)
-FUNCTION generate_neighbors(assignments):
-    CREATE empty neighbors list
-    
-    FOR each assignment IN assignments:
-        TRY moving to different time slots within the same room
-        IF valid:
-            ADD to neighbors
-        
-        TRY moving to a different room
-        IF valid:
-            ADD to neighbors
-        
-        TRY swapping two classes (different groups only)
-        IF valid:
-            ADD to neighbors
-    
-    RETURN neighbors
-
-# Calculate Score (calculate_score)
-FUNCTION calculate_score(assignments):
-    RETURN NUMBER OF assigned classes
-
-# Local Search Run (local_search_run)
-FUNCTION local_search_run(N, M, class_list, room_capacities):
-    current_solution = initialize_solution(N, M, class_list, room_capacities)
-    current_score = calculate_score(current_solution)
-    no_improve_count = 0
-    
-    WHILE no_improve_count < 100 AND iterations < 300:
-        neighbors = generate_neighbors(current_solution)
-        IF neighbors IS EMPTY:
-            BREAK
-        
-        best_neighbor = SELECT best neighbor BASED ON score
-        IF best_neighbor IS better:
-            current_solution = best_neighbor
-            current_score = calculate_score(best_neighbor)
-            RESET no_improve_count
-        ELSE:
-            INCREMENT no_improve_count
-    
-    RETURN current_solution
-
-# Parallel Local Search (local_search)
-FUNCTION local_search(N, M, class_list, room_capacities):
-    RUN multiple instances of local_search_run IN PARALLEL
-    COLLECT all solutions
-    SELECT the best solution BASED ON score
-    RETURN the best solution
-
-# Main Program
-START
-    (N, M, class_list, room_capacities) = read_input()
-    best_solution = local_search(N, M, class_list, room_capacities)
-    
-    PRINT NUMBER OF assigned classes
-    FOR each (class, time_slot, room) IN best_solution:
-        PRINT class_id, time_slot + 1, room + 1
-END
+Local Search Algorithm:
+Start with the initial solution and calculate its score.
+Keep track of the best solution found so far and its score.
+Repeat the following steps until a certain number of iterations or no further improvement is possible:
+    Generate neighboring solutions based on the current solution.
+    Select a small number (e.g., up to 5) of the best neighbors with the highest scores.
+    Randomly pick one of these top neighbors as the new solution.
+    If the new solution has a better score, update the current solution and reset the "no improvement" counter.
+    If no improvement, increase the counter.
+    Occasionally attempt to add unassigned classes to the current solution.
+After completing all iterations, save the best solution found during the process.
