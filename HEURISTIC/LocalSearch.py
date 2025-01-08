@@ -1,7 +1,6 @@
 #PYTHON 
 import random
 import multiprocessing
-import time
 
 def read_input():
     N, M = map(int, input().split())
